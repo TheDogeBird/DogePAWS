@@ -17,11 +17,26 @@ Proposed filestructure thus far
 │       │   ├── edit.html
 │       │   ├── index.html
 │       │   └── view.html
-│       └── user
-│           ├── login.html
-│           ├── logout.html
-│           ├── profile.html
-│           └── register.html
+│       ├── user
+│       │   ├── login.html
+│       │   ├── logout.html
+│       │   ├── profile.html
+│       │   └── register.html
+│       └── vendor
+│           ├── bootstrap
+│           │   ├── css
+│           │   ├── js
+│           │   └── ...
+│           ├── fontawesome
+│           │   ├── css
+│           │   ├── js
+│           │   ├── webfonts
+│           │   └── ...
+│           ├── dogecoin
+│           │   ├── checkout.html
+│           │   ├── success.html
+│           │   └── ...
+│           └── ...
 ├── migrations
 │   ├── alembic.ini
 │   ├── env.py
@@ -36,9 +51,13 @@ Proposed filestructure thus far
 │   ├── img
 │   │   ├── logo.png
 │   │   └── ...
-│   └── js
-│       ├── main.js
-│       └── ...
+│   ├── js
+│   │   ├── main.js
+│   │   └── ...
+│   ├── dogecoin
+│   │   ├── dogecoin.js
+│   │   └── ...
+│   └── ...
 ├── templates
 │   ├── 404.html
 │   ├── base.html
@@ -68,6 +87,10 @@ Proposed filestructure thus far
 │       │   ├── css
 │       │   ├── js
 │       │   ├── webfonts
+│       │   └── ...
+│       ├── dogecoin
+│       │   ├── checkout.html
+│       │   ├── success.html
 │       │   └── ...
 │       └── ...
 ├── .env
