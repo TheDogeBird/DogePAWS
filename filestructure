@@ -1,0 +1,80 @@
+Proposed filestructure thus far
+.
+├── app
+│   ├── __init__.py
+│   ├── models.py
+│   ├── routes.py
+│   └── templates
+│       ├── base.html
+│       ├── category
+│       │   ├── add.html
+│       │   ├── edit.html
+│       │   ├── index.html
+│       │   └── view.html
+│       ├── error.html
+│       ├── product
+│       │   ├── add.html
+│       │   ├── edit.html
+│       │   ├── index.html
+│       │   └── view.html
+│       └── user
+│           ├── login.html
+│           ├── logout.html
+│           ├── profile.html
+│           └── register.html
+├── migrations
+│   ├── alembic.ini
+│   ├── env.py
+│   ├── README
+│   ├── script.py.mako
+│   └── versions
+│       ├── ...
+├── static
+│   ├── css
+│   │   ├── main.css
+│   │   └── ...
+│   ├── img
+│   │   ├── logo.png
+│   │   └── ...
+│   └── js
+│       ├── main.js
+│       └── ...
+├── templates
+│   ├── 404.html
+│   ├── base.html
+│   ├── category
+│   │   ├── add.html
+│   │   ├── edit.html
+│   │   ├── index.html
+│   │   └── view.html
+│   ├── error.html
+│   ├── index.html
+│   ├── product
+│   │   ├── add.html
+│   │   ├── edit.html
+│   │   ├── index.html
+│   │   └── view.html
+│   ├── user
+│   │   ├── login.html
+│   │   ├── logout.html
+│   │   ├── profile.html
+│   │   └── register.html
+│   └── vendor
+│       ├── bootstrap
+│       │   ├── css
+│       │   ├── js
+│       │   └── ...
+│       ├── fontawesome
+│       │   ├── css
+│       │   ├── js
+│       │   ├── webfonts
+│       │   └── ...
+│       └── ...
+├── .env
+├── .gitignore
+├── app.py
+├── config.py
+├── database.db
+├── LICENSE
+├── README.md
+└── requirements.txt
