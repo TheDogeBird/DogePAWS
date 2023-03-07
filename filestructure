@@ -23,6 +23,12 @@ Proposed filestructure thus far per gpt
 │       │   ├── profile.html
 │       │   └── register.html
 │       └── vendor
+│       ├── inventory
+│       │   ├── add.html
+│       │   ├── edit.html
+│       │   ├── index.html
+│       │   └── view.html
+│       └── ...
 │           ├── bootstrap
 │           │   ├── css
 │           │   ├── js
