@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  {% if current_user.is_authenticated %}
+    {% set url = url_for('dashboard') %}
+    <script>
+      window.location.href = "{{ url }}";
+    </script>
+  {% else %}
+    <h1>Login</h1>
+    <form method="POST">
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required>
+      <br>
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required>
+      <br>
+      <input type="submit" value="Login" id="submit-btn">
+    </form>
+  {% endif %}
+{% endblock %}

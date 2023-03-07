@@ -1,8 +1,12 @@
-from flask import Blueprint, jsonify, request, render_template
+from flask import Blueprint, jsonify
+from flask import render_template, request, flash, redirect, url_for
+from werkzeug.security import check_password_hash
+from flask_migrate import Migrate
+from flask_login import LoginManager, current_user, login_user
 from models import User, Product, Category, Supplier, Order, OrderItem, Inventory
 import jwt
 from datetime import datetime, timedelta
-from __main__ import app, db
+from models import db
 app_bp = Blueprint('app_bp', __name__)
 
 @app_bp.route('/')
@@ -14,10 +18,27 @@ def register():
     # implementation for registering a user
     pass
 
-@app_bp.route('/login', methods=['POST'])
+
+@app_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    # implementation for logging in a user
-    pass
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        user = User.query.filter_by(email=email).first()
+        if user is None or not user.check_password(password):
+            return redirect(url_for('invalid_login'))
+        login_user(user)
+        return redirect(url_for('dashboard'))
+
+    return render_template('login.html')
+
+@app_bp.route('/invalidlogin')
+def invalidlogin():
+    flash('Invalid email or password')
+    return redirect(url_for('login'))
 
 @app_bp.route('/products', methods=['GET'])
 def products():

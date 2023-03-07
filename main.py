@@ -4,12 +4,17 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from models import User
 
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:''@localhost/DogePOS'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-login_manager = LoginManager(app)
+login_manager = LoginManager()
+
+# Secret key:
+app.secret_key = 'WowSuchCamelCaseMuchSecure'
+
 
 @login_manager.user_loader
 def load_user(user_id):

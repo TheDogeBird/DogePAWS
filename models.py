@@ -7,28 +7,27 @@ from flask_login import LoginManager
 db = SQLAlchemy()
 login_manager = LoginManager()
 
-class User(UserMixin, db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = 'User'
     __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
-    first_name = db.Column(db.String(50), nullable=False)
-    last_name = db.Column(db.String(50), nullable=False)
+    first_name = db.Column(db.String(30), nullable=False)
+    last_name = db.Column(db.String(30), nullable=False)
     phone = db.Column(db.String(20), nullable=False)
-    role_id = db.Column(db.Integer, db.ForeignKey('user_role.id'), nullable=False)
+    role_id = db.Column(db.Integer, db.ForeignKey('UserRole.id'), nullable=False)
+
     orders = db.relationship('Order', backref='user', lazy=True)
 
-    @property
-    def password(self):
-        raise AttributeError('password is not a readable attribute')
+    def __repr__(self):
+        return f'<User {self.email}>'
 
-    @password.setter
-    def password(self, password):
+    def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
-    def verify_password(self, password):
+    def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
     def to_dict(self):
@@ -37,8 +36,11 @@ class User(UserMixin, db.Model):
             'email': self.email,
             'first_name': self.first_name,
             'last_name': self.last_name,
-            'phone': self.phone
+            'phone': self.phone,
+            'role': self.role.name,
+            'orders': [order.to_dict() for order in self.orders]
         }
+
 
 class UserRole(db.Model):
     __tablename__ = 'UserRole'
@@ -47,7 +49,7 @@ class UserRole(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
 
-    users = db.relationship('User', backref='role')
+    users = db.relationship('User', backref='role', lazy=True)
 
     def __repr__(self):
         return f'<UserRole {self.name}>'
@@ -106,7 +108,9 @@ class Product(db.Model):
 
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('User.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    product_quantity = db.Column(db.Integer, nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     order_items = db.relationship('OrderItem', backref='order', lazy=True)
 
@@ -114,6 +118,8 @@ class Order(db.Model):
         return {
             'id': self.id,
             'user_id': self.user_id,
+            'product_id': self.product_id,
+            'product_quantity': self.product_quantity,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
             'items': [item.to_dict() for item in self.order_items]
         }
