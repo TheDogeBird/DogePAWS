@@ -1,0 +1,33 @@
+body {
+  background-color: black;
+  color: white;
+}
+
+.container {
+  margin: 0 auto;
+  text-align: center;
+  width: 50%;
+  margin-top: 10%;
+}
+
+.form-group {
+  margin-bottom: 1em;
+}
+
+.form-control {
+  padding: 0.5em;
+  width: 100%;
+}
+
+.btn {
+  background-color: blue;
+  color: white;
+  border: none;
+  padding: 0.5em 1em;
+  border-radius: 0.5em;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background-color: lightblue;
+}

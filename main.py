@@ -25,6 +25,21 @@ class Category(db.Model):
             'description': self.description
         }
 
+class Inventory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+    stock = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'product_id': self.product_id,
+            'stock': self.stock,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
+        }
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -408,6 +423,93 @@ def delete_order(order_id):
     db.session.commit()
 
     return '', 204
+
+## TODO::INVENTORY MANAGEMENT
+
+@app.route('/inventory', methods=['GET'])
+def inventory():
+    # Get all products with inventory data
+    products = Product.query.all()
+
+    # Convert to dictionary format
+    result = [product.to_dict() for product in products]
+
+    return jsonify(result)
+
+
+@app.route('/inventory/<int:product_id>', methods=['GET'])
+def get_inventory(product_id):
+    # Get product by ID
+    product = Product.query.get(product_id)
+
+    # Check if product exists
+    if not product:
+        return jsonify({'error': 'Product not found'}), 404
+
+    # Get inventory data for the product
+    inventory = Inventory.query.filter_by(product_id=product_id).all()
+
+    # Convert to dictionary format
+    result = product.to_dict()
+    result['inventory'] = [i.to_dict() for i in inventory]
+
+    return jsonify(result)
+
+
+@app.route('/inventory', methods=['POST'])
+def add_inventory():
+    data = request.get_json()
+
+    # Get product by ID
+    product = Product.query.get(data['product_id'])
+
+    # Check if product exists
+    if not product:
+        return jsonify({'error': 'Product not found'}), 404
+
+    # Create a new inventory entry
+    new_inventory = Inventory(product_id=data['product_id'], quantity=data['quantity'], timestamp=datetime.utcnow())
+    db.session.add(new_inventory)
+    db.session.commit()
+
+    return jsonify(new_inventory.to_dict()), 201
+
+
+@app.route('/inventory/<int:inventory_id>', methods=['PUT'])
+def update_inventory(inventory_id):
+    data = request.get_json()
+
+    # Get inventory entry by ID
+    inventory = Inventory.query.get(inventory_id)
+
+    # Check if inventory entry exists
+    if not inventory:
+        return jsonify({'error': 'Inventory entry not found'}), 404
+
+    # Update inventory data
+    inventory.quantity = data['quantity']
+    inventory.timestamp = datetime.utcnow()
+    db.session.commit()
+
+    return jsonify(inventory.to_dict())
+
+
+@app.route('/inventory/<int:inventory_id>', methods=['DELETE'])
+def delete_inventory(inventory_id):
+    # Get inventory entry by ID
+    inventory = Inventory.query.get(inventory_id)
+
+    # Check if inventory entry exists
+    if not inventory:
+        return jsonify({'error': 'Inventory entry not found'}), 404
+
+    # Delete inventory entry
+    db.session.delete(inventory)
+    db.session.commit()
+
+    return '', 204
+
+
 
 
 if __name__ == '__main__':
