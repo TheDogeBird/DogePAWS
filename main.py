@@ -1,16 +1,24 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_login import LoginManager
 from datetime import datetime, timedelta
 import requests
 import jwt
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://dogepaws!:dogepaws!@localhost/DogePOS'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:''@localhost/DogePOS'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+login_manager = LoginManager()
+login_manager.init_app(app)
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+login_manager.login_view = 'login'
 
 # Define the database models
 class Category(db.Model):
@@ -179,6 +187,7 @@ class OrderItem(db.Model):
 def index():
     return render_template('index.html')
 
+## TODO::REGISTER --------------------------------------------------
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -203,6 +212,7 @@ def register():
 
     return render_template('register.html')
 
+## TODO::LOGIN --------------------------------------------------
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -226,6 +236,7 @@ def login():
 
     return render_template('login.html')
 
+## TODO::PRODUCTS --------------------------------------------------
 
 @app.route('/products', methods=['GET'])
 def products():
@@ -252,6 +263,7 @@ def get_product(product_id):
 
     return jsonify(result)
 
+## TODO::CATEGOIES --------------------------------------------------
 
 @app.route('/categories', methods=['GET'])
 def categories():
@@ -278,6 +290,7 @@ def get_category(category_id):
 
     return jsonify(result)
 
+## TODO::SUPPLIERS --------------------------------------------------
 
 @app.route('/suppliers', methods=['GET'])
 def suppliers():
@@ -304,6 +317,7 @@ def get_supplier(supplier_id):
 
     return jsonify(result)
 
+## TODO::ORDERS --------------------------------------------------
 
 @app.route('/orders', methods=['GET'])
 def orders():
@@ -424,7 +438,7 @@ def delete_order(order_id):
 
     return '', 204
 
-## TODO::INVENTORY MANAGEMENT
+## TODO::INVENTORY MANAGEMENT --------------------------------------------------
 
 @app.route('/inventory', methods=['GET'])
 def inventory():
@@ -509,8 +523,7 @@ def delete_inventory(inventory_id):
 
     return '', 204
 
-
-
+## TODO::MAIN --------------------------------------------------
 
 if __name__ == '__main__':
     app.run(debug=True)
