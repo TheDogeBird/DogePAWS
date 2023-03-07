@@ -1,4 +1,4 @@
-Proposed filestructure thus far
+Proposed filestructure thus far per gpt
 .
 ├── app
 │   ├── __init__.py
