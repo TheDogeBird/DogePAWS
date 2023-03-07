@@ -1,0 +1,66 @@
+Project Overview
+DogePOS is a point-of-sale application built on the Flask web framework using Python. The application allows users to browse and purchase products from a variety of categories. It is designed to be used in retail and hospitality businesses.
+
+Technologies Used
+Flask web framework
+Python programming language
+MySQL relational database management system
+SQLAlchemy Object-Relational Mapping library
+HTML, CSS, and JavaScript
+Bootstrap front-end framework
+JWT authentication library
+
+
+[Features]
+
+User Management:
+User registration with email, password, first name, last name, and phone number
+User login with email and password
+Password hashing for secure storage
+JWT authentication for secure access to protected resources
+
+Product Management:
+Browse products by category
+View product details, including name, description, price, category, brand, size, color, room type, amenities, rate, availability, supplier, and custom properties
+Search for products by name, description, or custom properties
+Add new products with required fields of name, description, price, and category
+Edit existing products
+Delete existing products
+
+Category Management:
+Browse categories
+View category details, including name and description
+Add new categories with required field of name
+Edit existing categories
+Delete existing categories
+
+Supplier Management:
+Browse suppliers
+View supplier details, including name, address, and phone number
+Add new suppliers with required field of name
+Edit existing suppliers
+Delete existing suppliers
+
+Order Management:
+Browse orders
+View order details, including user ID, created date, and updated date
+Add new orders with required field of user ID
+Add order items to existing orders
+Edit existing orders
+Delete existing orders
+
+Inventory Management:
+Browse inventory
+View inventory details, including product ID, quantity, and created date
+Add new inventory with required fields of product ID and quantity
+Edit existing inventory
+Delete existing inventory
+
+Dogecoin Integration:
+Accept payment in Dogecoin cryptocurrency
+Calculate exchange rate from Dogecoin to US dollars based on current market data
+Convert payment amount from Dogecoin to US dollars and update order total
+Record payment details in order history
+
+[Conclusion]
+DogePOS is a fully functional point-of-sale application with features for user management, product management, category management, supplier management, order management, inventory management, and Dogecoin integration. It is built using the Flask web framework and a MySQL relational database management system. It is designed to be used in retail and hospitality businesses, and can be easily customized to fit the needs of individual organizations.
