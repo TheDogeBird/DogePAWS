@@ -1,16 +1,23 @@
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
-from main import db, login_manager
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
 
+db = SQLAlchemy()
+login_manager = LoginManager()
 
 class User(UserMixin, db.Model):
+    __tablename__ = 'User'
+    __table_args__ = {'extend_existing': True}
+
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
     phone = db.Column(db.String(20), nullable=False)
+    role_id = db.Column(db.Integer, db.ForeignKey('user_role.id'), nullable=False)
     orders = db.relationship('Order', backref='user', lazy=True)
 
     @property
@@ -33,6 +40,17 @@ class User(UserMixin, db.Model):
             'phone': self.phone
         }
 
+class UserRole(db.Model):
+    __tablename__ = 'UserRole'
+    __table_args__ = {'extend_existing': True}
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+
+    users = db.relationship('User', backref='role')
+
+    def __repr__(self):
+        return f'<UserRole {self.name}>'
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
