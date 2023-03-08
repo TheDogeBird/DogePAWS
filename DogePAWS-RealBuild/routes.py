@@ -1,49 +1,51 @@
+import os
 from sanic import response
-from sanic_jwt import exceptions, initialize, protected, inject_user
-from main import app
-from UserMgmt import User, get_user_by_email, add_user, remove_user, authenticate, retrieve_user
-import jwt
+from sanic.views import HTTPMethodView
+from UserMgmt import User, get_user_by_username, add_user, remove_user, retrieve_user
+from sanic_jwt.decorators import protected
+from Views import LoginView, DashboardView, EmployeeDashboardView
+from app import app
 
-@app.route('/')
-async def index(request):
-    return response.redirect('/login')
+def setup_routes():
+    app.add_route(LoginView.as_view(), '/login')
+    app.add_route(DashboardView.as_view(), '/dashboard')
+    app.add_route(EmployeeDashboardView.as_view(), '/employee-dashboard')
 
+    base_dir = os.path.dirname(os.path.abspath(__file__))
 
-@app.route('/login', methods=['GET', 'POST'])
-async def login(request):
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        user = await authenticate(request, email, password)
-        if user:
-            payload = {'user_id': user.email}
-            token = jwt.encode(payload, app.config.SANIC_JWT_SECRET, algorithm='HS256')
-            headers = {'Authorization': 'Bearer {}'.format(token)}
-            if user.is_admin or user.is_sub_admin:
-                return response.redirect('/dashboard', headers=headers)
-            elif user.is_employee:
-                return response.redirect('/employee-dashboard', headers=headers)
+    login_view = LoginView()
+    dashboard_view = DashboardView()
+    employee_dashboard_view = EmployeeDashboardView()
+
+    from sanic.response import html
+
+    @app.route('/')
+    async def index(request):
+        with open("Views/login.html", "r") as f:
+            html_str = f.read()
+        return html(html_str)
+
+    @app.route("/login")
+    async def login(request):
+        with open("Views/login.html", "r") as f:
+            html = f.read()
+        return response.html(html)
+
+    @app.route('/dashboard')
+    @protected()
+    async def dashboard(request):
+        user = await retrieve_user(request, app.config.SANIC_JWT_SECRET)
+        if user.is_admin or user.is_sub_admin:
+            return await dashboard_view.render(request=request, template_name='dashboard.html')
         else:
             return response.redirect('/login')
 
-    return await response.file('templates/login.html')
+    @app.route('/employee-dashboard')
+    @protected()
+    async def employee_dashboard(request):
+        user = await retrieve_user(request, app.config.SANIC_JWT_SECRET)
+        if user.is_employee:
+            return await employee_dashboard_view.render(request=request, template_name='employee_dashboard.html')
+        else:
+            return response.redirect('/login')
 
-
-@app.route('/dashboard')
-@protected()
-async def dashboard(request):
-    user = await retrieve_user(request, request.app.config.SANIC_JWT_SECRET)
-    if user.is_admin or user.is_sub_admin:
-        return await response.file('templates/dashboard.html')
-    else:
-        return response.redirect('/login')
-
-
-@app.route('/employee-dashboard')
-@protected()
-async def employee_dashboard(request):
-    user = await retrieve_user(request, request.app.config.SANIC_JWT_SECRET)
-    if user.is_employee:
-        return await response.file('templates/employee-dashboard.html')
-    else:
-        return response.redirect('/login')
