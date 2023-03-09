@@ -1,51 +1,35 @@
-import os
-from sanic import response
-from sanic.views import HTTPMethodView
-from UserMgmt import User, get_user_by_username, add_user, remove_user, retrieve_user
-from sanic_jwt.decorators import protected
-from Views import LoginView, DashboardView, EmployeeDashboardView
-from app import app
+# Routes.py
 
-def setup_routes():
-    app.add_route(LoginView.as_view(), '/login')
-    app.add_route(DashboardView.as_view(), '/dashboard')
-    app.add_route(EmployeeDashboardView.as_view(), '/employee-dashboard')
+from sanic import Blueprint
+from Views import LoginView
+from sanic.response import html
+from jinja2 import Environment, PackageLoader, select_autoescape
 
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+env = Environment(
+    loader=PackageLoader('Views', '.'),
+    autoescape=select_autoescape(['html', 'xml'])
+)
 
-    login_view = LoginView()
-    dashboard_view = DashboardView()
-    employee_dashboard_view = EmployeeDashboardView()
+auth = Blueprint('auth', url_prefix='/auth')
+auth.add_route(LoginView.as_view(), '/login')
 
-    from sanic.response import html
+views = Blueprint('views')
 
-    @app.route('/')
-    async def index(request):
-        with open("Views/login.html", "r") as f:
-            html_str = f.read()
-        return html(html_str)
+@views.route('/')
+async def index(request):
+    template = env.get_template('login.html')
+    return html(template.render())
 
-    @app.route("/login")
-    async def login(request):
-        with open("Views/login.html", "r") as f:
-            html = f.read()
-        return response.html(html)
+@views.route('/dashboard')
+async def dashboard(request):
+    template = env.get_template('dashboard.html')
+    return html(template.render())
 
-    @app.route('/dashboard')
-    @protected()
-    async def dashboard(request):
-        user = await retrieve_user(request, app.config.SANIC_JWT_SECRET)
-        if user.is_admin or user.is_sub_admin:
-            return await dashboard_view.render(request=request, template_name='dashboard.html')
-        else:
-            return response.redirect('/login')
+@views.route('/employee_dashboard')
+async def employee_dashboard(request):
+    template = env.get_template('employee_dashboard.html')
+    return html(template.render())
 
-    @app.route('/employee-dashboard')
-    @protected()
-    async def employee_dashboard(request):
-        user = await retrieve_user(request, app.config.SANIC_JWT_SECRET)
-        if user.is_employee:
-            return await employee_dashboard_view.render(request=request, template_name='employee_dashboard.html')
-        else:
-            return response.redirect('/login')
-
+def setup_routes(app):
+    app.blueprint(auth)
+    app.blueprint(views)

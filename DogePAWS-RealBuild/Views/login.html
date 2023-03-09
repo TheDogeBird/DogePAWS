@@ -56,8 +56,11 @@
 </head>
 <body>
 	<h1>Login</h1>
-	<form method="POST" action="/login">
-		<input type="text" name="email" placeholder="Email" autocomplete="off" required><br>
+	{% if message %}
+	<p style="color: red;">{{ message }}</p>
+	{% endif %}
+	<form method="POST" action="/authenticate">
+		<input type="text" name="username" placeholder="Username" autocomplete="off" required><br>
 		<input type="password" name="password" placeholder="Password" autocomplete="off" required><br>
 		<input type="submit" value="Logon">
 	</form>

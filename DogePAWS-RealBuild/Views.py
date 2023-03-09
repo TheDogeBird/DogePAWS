@@ -1,62 +1,49 @@
-from sanic import response
-from sanic.views import HTTPMethodView
-#from sanic.exceptions import abort
-from jinja2 import Environment, FileSystemLoader, select_autoescape
-from sanic_jwt import protected
-from app import app
-from app import app
-from UserMgmt import User, get_user_by_email, add_user, remove_user, authenticate, retrieve_user
-import jwt
+# Views.py
 
+from sanic import Blueprint
+from sanic.views import HTTPMethodView
+from sanic.response import html
+from jinja2 import Environment, PackageLoader, select_autoescape
 
 env = Environment(
-    loader=FileSystemLoader('Views'),
+    loader=PackageLoader('Views', '.'),
     autoescape=select_autoescape(['html', 'xml'])
 )
 
+views = Blueprint('views')
 
-class BaseView(HTTPMethodView):
-    async def render(self, request, template_name, **context):
-        template = env.get_template(template_name)
-        html = template.render(request=request, **context)
-        return html
+@views.route('/')
+async def index(request):
+    template = env.get_template('login.html')
+    return html(template.render())
 
 
-class LoginView(BaseView):
+@views.route('/dashboard')
+async def dashboard(request):
+    template = env.get_template('dashboard.html')
+    return html(template.render())
+
+
+@views.route('/employee_dashboard')
+async def employee_dashboard(request):
+    template = env.get_template('employee_dashboard.html')
+    return html(template.render())
+
+class LoginView(HTTPMethodView):
     async def get(self, request):
-        return await self.render(request, 'login.html')
+        return html('<h1>Login page</h1>')
 
     async def post(self, request):
-        email = request.form.get('email')
+        username = request.form.get('username')
         password = request.form.get('password')
-        user = await authenticate(request, email, password)
-        if user:
-            payload = {'user_id': user.email}
-            token = jwt.encode(payload, app.config.SANIC_JWT_SECRET, algorithm='HS256')
-            headers = {'Authorization': 'Bearer {}'.format(token)}
-            if user.is_admin or user.is_sub_admin:
-                return await response.file('views/dashboard.html', headers=headers)
-            elif user.is_employee:
-                return await response.file('views/employee_dashboard.html', headers=headers)
+        if await self.authenticate(username, password):
+            return html('<h1>Logged in successfully!</h1>')
         else:
-            return response.redirect('/login')
+            return html('<h1>Invalid username or password</h1>')
 
-
-class DashboardView(BaseView):
-    @protected()
-    async def get(self, request):
-        user = await retrieve_user(request, request.app.config.SANIC_JWT_SECRET)
-        if user.is_admin or user.is_sub_admin:
-            return await self.render(request, 'dashboard.html')
+    async def authenticate(self, username, password):
+        # Your authentication logic here
+        if username == 'admin' and password == 'password':
+            return True
         else:
-            return response.redirect('/login')
-
-
-class EmployeeDashboardView(BaseView):
-    @protected()
-    async def get(self, request):
-        user = await retrieve_user(request, request.app.config.SANIC_JWT_SECRET)
-        if user.is_employee:
-            return await self.render(request, 'employee_dashboard.html')
-        else:
-            return response.redirect('/login')
+            return False

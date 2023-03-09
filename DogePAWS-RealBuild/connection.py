@@ -1,3 +1,5 @@
+# connection.py
+
 import asyncpg
 
 async def create_pool():
@@ -9,3 +11,6 @@ async def create_pool():
         port=5432  # replace with your port number
     )
     return pool
+
+async def get_pool():
+    return await create_pool()

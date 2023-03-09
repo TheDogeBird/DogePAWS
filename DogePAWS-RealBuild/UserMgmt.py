@@ -1,6 +1,9 @@
+# UserMgmt.py
+
 import asyncpg
-from connection import create_pool
 from asyncpg.pool import Pool
+from sanic_jwt import exceptions
+from connection import get_pool
 
 class User:
     def __init__(self, id, username, password, role, is_admin=False, is_sub_admin=False):
@@ -27,37 +30,36 @@ class User:
         return self.role == 'vendor'
 
 
-async def get_user_by_username(username):
-    async with create_pool() as pool:
-        async with pool.acquire() as conn:
-            user = await conn.fetchrow('SELECT * FROM users WHERE username=$1', username)
-            if user:
-                return User(user['id'], user['username'], user['password'], user['role'], user['is_admin'], user['is_sub_admin'])
-            else:
-                return None
+async def get_user_by_username(pool: Pool, username: str) -> User:
+    async with pool.acquire() as conn:
+        user = await conn.fetchrow('SELECT * FROM users WHERE username=$1', username)
+        if user:
+            return User(user['id'], user['username'], user['password'], user['role'], user['is_admin'], user['is_sub_admin'])
+        else:
+            return None
 
 
-async def authenticate(request, username, password):
-    user = await get_user_by_username(username)
+async def authenticate(pool: Pool, request, username: str, password: str) -> User:
+    user = await get_user_by_username(pool, username)
     if user and password == user.password:
         return user
     else:
-        return None
+        raise exceptions.AuthenticationFailed("Invalid credentials")
 
 
-async def add_user(username, password, role, is_admin=False, is_sub_admin=False):
-    async with create_pool() as pool:
-        async with pool.acquire() as conn:
-            await conn.execute('INSERT INTO users (username, password, role, is_admin, is_sub_admin) VALUES ($1, $2, $3, $4, $5)', username, password, role, is_admin, is_sub_admin)
-
-async def remove_user(username):
-    async with create_pool() as pool:
-        async with pool.acquire() as conn:
-            await conn.execute('DELETE FROM users WHERE username=$1', username)
+async def add_user(pool: Pool, username: str, password: str, role: str, is_admin: bool = False, is_sub_admin: bool = False) -> None:
+    async with pool.acquire() as conn:
+        await conn.execute('INSERT INTO users (username, password, role, is_admin, is_sub_admin) VALUES ($1, $2, $3, $4, $5)', username, password, role, is_admin, is_sub_admin)
 
 
-async def retrieve_user(request, payload, *args, **kwargs):
+async def remove_user(pool: Pool, username: str) -> None:
+    async with pool.acquire() as conn:
+        await conn.execute('DELETE FROM users WHERE username=$1', username)
+
+
+async def retrieve_user(request, payload, *args, **kwargs) -> User:
     user_id = payload.get('user_id', None)
     if user_id:
-        return await get_user_by_username(user_id)
+        pool = await get_pool()
+        return await get_user_by_username(pool, user_id)
     return None
