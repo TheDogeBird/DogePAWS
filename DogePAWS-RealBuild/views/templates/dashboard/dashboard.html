@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Dashboard | DogePAWS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+  </head>
+  <body>
+    <header>
+      <h1>DogePAWS Dashboard</h1>
+    </header>
+    <nav>
+      <ul>
+        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('orders') }}">Orders</a></li>
+        <li><a href="{{ url_for('inventory') }}">Inventory</a></li>
+        <li><a href="{{ url_for('employees') }}">Employees</a></li>
+        <li><a href="{{ url_for('customers') }}">Customers</a></li>
+        <li><a href="{{ url_for('reports') }}">Reports</a></li>
+        <li><a href="{{ url_for('settings') }}">Settings</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+      </ul>
+    </nav>
+    <main>
+      <h2>Welcome, {{ current_user.name }}</h2>
+      <p>This is the dashboard page for DogePAWS Point of Sales System.</p>
+      <p>You can manage your orders, inventory, employees, customers, reports and settings using the links above.</p>
+    </main>
+  </body>
+</html>
