@@ -1,9 +1,10 @@
+# views/auth.py
+# Routes for authentication and user management
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from Models.user import User
+from Models.user import User, is_admin
 from Models.database import db
-from app import app
 
 auth = Blueprint('auth', __name__)
 
@@ -26,55 +27,49 @@ def login():
     # If the request method is GET, render the login page
     return render_template('login.html')
 
+
 @auth.route('/logout')
 def logout():
     # Clear the user session and redirect to the login page
     session.clear()
     return redirect(url_for('auth.login'))
 
+
 @auth.route('/users')
-def view_users():
-    # Check if the user is logged in and has admin privileges
-    if 'user_id' not in session:
-        return redirect(url_for('auth.login'))
-
-    user_id = session['user_id']
-    user = User.query.get(user_id)
-
-    if not user.is_admin:
-        return "You do not have permission to view this page."
-
-    # Get all the users from the database
+def get_all_users():
+    # Get all users
     users = User.query.all()
 
+    # Render the users page with the list of users
     return render_template('users.html', users=users)
 
-@auth.route('/users/new', methods=['GET', 'POST'])
+
+@auth.route('/users/<int:user_id>')
+def get_user(user_id):
+    # Get the user object
+    user = User.query.get(user_id)
+
+    # Render the user page with the user object
+    return render_template('user.html', user=user)
+
+
+@auth.route('/users/create', methods=['GET', 'POST'])
 def create_user():
     if request.method == 'POST':
+        # Get the form data
         username = request.form.get('username')
         password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-        is_admin = request.form.get('is_admin')
+        role = request.form.get('role')
 
-        # Check if the passwords match
-        if password != confirm_password:
-            error_message = 'Passwords do not match'
-            return render_template('create_user.html', error_message=error_message)
+        # Create the user object
+        new_user = User(username=username, password=generate_password_hash(password), role=role)
 
-        # Check if the username is already taken
-        existing_user = User.query.filter_by(username=username).first()
-        if existing_user:
-            error_message = 'Username is already taken'
-            return render_template('create_user.html', error_message=error_message)
-
-        # Create a new user object and add it to the database
-        user = User(username=username, password=generate_password_hash(password), is_admin=is_admin)
-        db.session.add(user)
+        # Add the user to the database
+        db.session.add(new_user)
         db.session.commit()
 
-        # Redirect the user to the dashboard
-        return redirect(url_for('dashboard'))
+        # Redirect to the users page
+        return redirect(url_for('auth.get_all_users'))
 
     # If the request method is GET, render the create user page
     return render_template('create_user.html')
@@ -86,37 +81,44 @@ def edit_user(user_id):
     user = User.query.get(user_id)
 
     if request.method == 'POST':
+        # Get the form data
         username = request.form.get('username')
         password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-        is_admin = request.form.get('is_admin')
+        role = request.form.get('role')
 
-        # Check if the passwords match
-        if password != confirm_password:
-            error_message = 'Passwords do not match'
-            return render_template('edit_user.html', user=user, error_message=error_message)
-
-        # Update the user object with the new data
+        # Update the user object
         user.username = username
         user.password = generate_password_hash(password)
-        user.is_admin = is_admin
+        user.role = role
+
+        # Update the user in the database
         db.session.commit()
 
-        # Redirect the user to the dashboard
-        return redirect(url_for('dashboard'))
+        # Redirect to the user page
+        return redirect(url_for('auth.get_user', user_id=user_id))
 
     # If the request method is GET, render the edit user page
     return render_template('edit_user.html', user=user)
 
 
+# Delete a user by ID
 @auth.route('/users/delete/<int:user_id>', methods=['GET', 'POST'])
 def delete_user(user_id):
+    # Check if the user is logged in and an administrator
+    if 'user_id' not in session or not is_admin():
+        return redirect(url_for('auth.login'))
+
     # Get the user object
     user = User.query.get(user_id)
 
-    # Delete the user object from the database
+    # If the user doesn't exist, show an error message
+    if not user:
+        error_message = f"User with ID {user_id} not found"
+        return render_template('error.html', error_message=error_message)
+
+    # Delete the user from the database
     db.session.delete(user)
     db.session.commit()
 
-    # Redirect the user to the dashboard
-    return redirect(url_for('dashboard'))
+    # Redirect to the user list page
+    return redirect(url_for('auth.user_list'))

@@ -1,8 +1,9 @@
-# from fastapi import FastAPI
-# from typing import List
+# main.py
 
-# from flask import render_template
-# from pydantic import BaseModel
+# from fastapi import FastAPI # commented out in case we needed them later
+# from typing import List # commented out in case we needed them later
+# from flask import render_template # commented out in case we needed them later
+# from pydantic import BaseModel # commented out in case we needed them later
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 

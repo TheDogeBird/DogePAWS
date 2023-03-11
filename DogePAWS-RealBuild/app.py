@@ -1,5 +1,7 @@
 from fastapi import FastAPI
+from Models.routers import login_router
 
-
-# do app stuff bro
 app = FastAPI()
+
+# Mount the login router at /login
+app.include_router(login_router, prefix="/login")
